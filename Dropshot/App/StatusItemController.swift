@@ -6,6 +6,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     struct Actions {
         var openSettings: () -> Void
         var openFolder: () -> Void
+        var showHistory: () -> Void
         var togglePause: () -> Void
         var quit: () -> Void
     }
@@ -14,6 +15,8 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private let actions: Actions
     private var isPaused = false
     private var statusText = ""
+    /// Menu title for clipboard history, `nil` when the feature is off.
+    var historyTitle: String?
 
     init(actions: Actions) {
         self.actions = actions
@@ -61,6 +64,9 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
         menu.addItem(item("Settings…", #selector(openSettings), key: ","))
         menu.addItem(item("Open Screenshots Folder", #selector(openFolder), key: "o"))
+        if historyTitle != nil {
+            menu.addItem(item(historyTitle ?? "", #selector(showHistory), key: ""))
+        }
         menu.addItem(item(isPaused ? "Resume" : "Pause", #selector(togglePause), key: "p"))
         menu.addItem(.separator())
         menu.addItem(item("Quit Dropshot", #selector(quit), key: "q"))
@@ -74,6 +80,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     @objc private func openSettings() { actions.openSettings() }
     @objc private func openFolder() { actions.openFolder() }
+    @objc private func showHistory() { actions.showHistory() }
     @objc private func togglePause() { actions.togglePause() }
     @objc private func quit() { actions.quit() }
 }

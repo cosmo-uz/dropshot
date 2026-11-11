@@ -161,19 +161,24 @@ final class SystemDefaultsService {
         return true
     }
 
-    /// SystemUIServer caches screenshot preferences; restarting it (it relaunches itself
-    /// instantly) makes the change take effect without logging out.
+    /// The screenshot preferences are cached by two system agents: `screencaptureui` (which
+    /// takes the capture and chooses where it is saved) and `SystemUIServer`. Both relaunch
+    /// on their own, so restarting them makes a change take effect without logging out.
+    /// Restarting only SystemUIServer is not enough: screenshots keep going to the old place.
     private func reloadSystemUI() {
         guard isRealSystemDomain else { return }
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
-        process.arguments = ["SystemUIServer"]
-        process.standardOutput = FileHandle.nullDevice
-        process.standardError = FileHandle.nullDevice
-        do {
-            try process.run()
-        } catch {
-            Log.system.error("killall SystemUIServer failed: \(error.localizedDescription, privacy: .public)")
+        CFPreferencesAppSynchronize(store.domain as CFString)
+        for agent in ["screencaptureui", "SystemUIServer"] {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
+            process.arguments = [agent]
+            process.standardOutput = FileHandle.nullDevice
+            process.standardError = FileHandle.nullDevice
+            do {
+                try process.run()
+            } catch {
+                Log.system.error("killall \(agent, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+            }
         }
     }
 }

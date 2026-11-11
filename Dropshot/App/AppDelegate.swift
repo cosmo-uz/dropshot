@@ -10,6 +10,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let systemDefaults = SystemDefaultsService()
     private lazy var integration = SystemIntegration(settings: settings, service: systemDefaults)
     private var updater: Updater?
+    private let history = ClipboardHistory()
+    private lazy var historyPanel = HistoryPanelController(history: history, settings: settings)
+    private let hotKey = HotKey()
+    private var registeredShortcut: HistoryShortcut?
     private var coordinator: CaptureCoordinator?
     private lazy var preview = NotchPreviewController(settings: settings)
 
@@ -19,6 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = StatusItemController(actions: .init(
             openSettings: { [weak self] in self?.showSettings() },
             openFolder: { [weak self] in self?.openScreenshotsFolder() },
+            showHistory: { [weak self] in self?.historyPanel.show() },
             togglePause: { [weak self] in self?.settings.paused.toggle() },
             quit: { NSApp.terminate(nil) }
         ))
@@ -35,12 +40,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Created at launch so Sparkle (when configured) can run its scheduled checks.
         updater = Updater()
 
+        syncHistory()
         refreshStatusItem()
         coordinator?.sync()
 
         if !settings.onboardingCompleted {
             showOnboarding()
         }
+
+        #if DEBUG
+        // `-debugShowHistory YES`: open the clipboard panel shortly after launch (TESTING.md).
+        if UserDefaults.standard.bool(forKey: "debugShowHistory") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in self?.historyPanel.show() }
+        }
+        #endif
     }
 
     private func handle(_ capture: ProcessedCapture) {
@@ -69,8 +82,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func settingsChanged() {
         integration.refresh()
+        syncHistory()
         refreshStatusItem()
         coordinator?.sync()
+    }
+
+    /// Clipboard history follows its setting and the Pause switch.
+    private func syncHistory() {
+        let enabled = settings.historyEnabled && !settings.paused
+        if enabled {
+            history.start()
+            if registeredShortcut != settings.historyShortcut {
+                hotKey.register(settings.historyShortcut) { [weak self] in self?.historyPanel.toggle() }
+                registeredShortcut = settings.historyShortcut
+            }
+        } else {
+            history.stop()
+            hotKey.unregister()
+            registeredShortcut = nil
+            historyPanel.hide()
+            if !settings.historyEnabled { history.clear() }
+        }
+        statusItem?.historyTitle = enabled
+            ? "Clipboard History (\(settings.historyShortcut.displayName))" : nil
     }
 
     private func refreshStatusItem() {

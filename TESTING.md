@@ -16,8 +16,18 @@ Last run: 2026-11-11, macOS 27.2.1, Apple M3 Pro, Xcode 27.2.
 | Island, Settings, onboarding appearance | offscreen renders | reviewed |
 | **Everything in "Manual checklist"** | needs a person at an unlocked Mac | **not run** |
 
-The Mac was at the lock screen for the whole build, so nothing below "Manual checklist" has
-been watched on a live display. Please walk through it once before shipping.
+The Mac was at the lock screen for the original build. Since then two things have been seen
+on the live display (screen captures of the real desktop): the island growing out of the
+notch with thumbnail, dimensions and "Copied ✓" after a capture landed in the folder, and
+the clipboard history panel listing three copied texts newest-first. Everything else in
+"Manual checklist" is still not run.
+
+### Bug found in the first live run
+
+Screenshots kept going to the Desktop after onboarding although
+`com.apple.screencapture location` was set correctly. Cause: `screencaptureui`, the agent
+that saves the capture, had the old location cached and Dropshot restarted only
+SystemUIServer. Fixed by restarting both. Not yet re-confirmed with a real ⌘⇧3 press.
 
 ## Automated
 
@@ -101,7 +111,8 @@ Reduce Motion); the second writes the three Settings tabs and three onboarding s
 
 Any setting can be overridden for one run: `-rootFolderPath`, `-onboardingCompleted YES`,
 `-previewDuration 2`, `-screencaptureDomain <domain>`, and in any build
-`-debugIslandStyle pill`, `-debugCompact YES`, `-debugReduceMotion YES`.
+`-debugIslandStyle pill`, `-debugCompact YES`, `-debugReduceMotion YES`. Debug builds also take
+`-debugShowHistory YES` (opens the clipboard panel 4 s after launch).
 
 ## Manual checklist
 
@@ -136,6 +147,17 @@ Not run yet. Use a notched MacBook; where noted, also an external display.
 - [ ] Drag the thumbnail into Telegram, Finder, Slack, Figma and a browser upload field.
 - [ ] Reduce Motion on (System Settings → Accessibility → Display): fades, no growth.
 
+### Clipboard history
+
+- [ ] ⇧⌘V opens the panel under the notch from any app; pressing it again or Esc closes it.
+- [ ] Copy text, an image from a browser, and a file in Finder: all three appear, newest first.
+- [ ] ↑ ↓ and Return, digits 1–9, and clicking a row each put that entry on the clipboard.
+- [ ] The app you were typing in is still frontmost afterwards.
+- [ ] ⌫ removes the selected entry; Clear empties the list.
+- [ ] Copy a password from a password manager: it does not appear.
+- [ ] "Paste the chosen item directly" on, Accessibility granted: picking pastes into the app.
+- [ ] Changing the shortcut in Settings takes effect immediately; Pause disables it.
+
 ### Displays
 
 - [ ] External display: black pill at top centre of the screen the shot was taken on.
@@ -162,7 +184,8 @@ Not run yet. Use a notched MacBook; where noted, also an external display.
 
 ## Known limitations
 
-- Nothing has been verified on a live screen yet (see above).
+- Most live behaviour is still unverified (see above), including real shortcut presses.
+- Clipboard history is not covered by unit tests.
 - If you decline "Move screenshots off your Desktop", Dropshot does nothing until you turn
   the setting on; it does not watch the Desktop.
 - Fullscreen detection assumes the menu bar window spans the display; untested on real

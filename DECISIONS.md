@@ -64,9 +64,32 @@ Choices made while building v0.1, with the reason for each.
   `show-thumbnail`. Before the first write, the previous value (or its absence) is saved.
   Restore puts that back, deleting the key if it did not exist. If you changed the setting
   yourself after Dropshot did, restore leaves your value alone.
-- **`killall SystemUIServer` after each change**, so it applies without logging out.
+- **`killall screencaptureui` and `killall SystemUIServer` after each change**, so it applies
+  without logging out. `screencaptureui` is the agent that takes the capture and decides where
+  it is saved; restarting only SystemUIServer (the first version) left screenshots going to
+  the Desktop until the next login. Found in the first live run on macOS 27.2.
 - **A test domain can stand in for `com.apple.screencapture`** (`-screencaptureDomain`). All
   automated checks use it; the real domain was never touched during development.
+
+## Clipboard history (added after v0.1 at the user's request)
+
+- **The original brief listed clipboard history as out of scope; the user then asked for it**
+  ("like Windows+V"), so it is in.
+- **Memory only.** Nothing is written to disk; quitting forgets everything. At most 30
+  entries; raw image data only for the newest 6 images and only under 8 MB each. Copied
+  files (including Dropshot's own screenshots) are remembered by path, not by content.
+- **Secrets are skipped:** pasteboards carrying `org.nspasteboard.ConcealedType` /
+  `TransientType` (the convention password managers follow) are not recorded.
+- **Change detection is a 0.5 s timer comparing `NSPasteboard.changeCount`.** macOS has no
+  pasteboard notification; this is the standard approach and costs nothing measurable.
+- **Global shortcut via Carbon `RegisterEventHotKey`** — the only hot key API that needs no
+  permission. Default ⇧⌘V; ⌃⌘V and ⌥⌘V are offered because ⇧⌘V is "paste and match style"
+  in some apps.
+- **The panel takes the keyboard without activating Dropshot**, so the app you were in stays
+  frontmost.
+- **Pasting for the user is opt-in** because it needs the Accessibility permission (to post
+  ⌘V). Off by default: picking an entry copies it.
+- **Pause also pauses history.**
 
 ## Updates and network
 

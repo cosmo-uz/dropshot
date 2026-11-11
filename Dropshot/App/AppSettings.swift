@@ -25,6 +25,9 @@ final class AppSettings {
         static let paused = "paused"
         static let showMenuBarIcon = "showMenuBarIcon"
         static let onboardingCompleted = "onboardingCompleted"
+        static let historyEnabled = "historyEnabled"
+        static let historyShortcut = "historyShortcut"
+        static let pasteDirectly = "pasteDirectly"
     }
 
     static let previewDurationRange: ClosedRange<Double> = 2...10
@@ -46,6 +49,9 @@ final class AppSettings {
     var paused: Bool { didSet { save(paused, Key.paused) } }
     var showMenuBarIcon: Bool { didSet { save(showMenuBarIcon, Key.showMenuBarIcon) } }
     var onboardingCompleted: Bool { didSet { save(onboardingCompleted, Key.onboardingCompleted) } }
+    var historyEnabled: Bool { didSet { save(historyEnabled, Key.historyEnabled) } }
+    var historyShortcut: HistoryShortcut { didSet { save(historyShortcut.rawValue, Key.historyShortcut) } }
+    var pasteDirectly: Bool { didSet { save(pasteDirectly, Key.pasteDirectly) } }
 
     var rootFolder: URL {
         URL(fileURLWithPath: (rootFolderPath as NSString).expandingTildeInPath, isDirectory: true)
@@ -64,6 +70,9 @@ final class AppSettings {
             Key.paused: false,
             Key.showMenuBarIcon: true,
             Key.onboardingCompleted: false,
+            Key.historyEnabled: true,
+            Key.historyShortcut: HistoryShortcut.commandShiftV.rawValue,
+            Key.pasteDirectly: false,
         ])
         rootFolderPath = store.string(forKey: Key.rootFolderPath) ?? Self.defaultRootFolder.path
         folderPattern = store.string(forKey: Key.folderPattern).flatMap(FolderPattern.init(rawValue:))
@@ -78,6 +87,10 @@ final class AppSettings {
         paused = store.bool(forKey: Key.paused)
         showMenuBarIcon = store.bool(forKey: Key.showMenuBarIcon)
         onboardingCompleted = store.bool(forKey: Key.onboardingCompleted)
+        historyEnabled = store.bool(forKey: Key.historyEnabled)
+        historyShortcut = store.string(forKey: Key.historyShortcut).flatMap(HistoryShortcut.init(rawValue:))
+            ?? .commandShiftV
+        pasteDirectly = store.bool(forKey: Key.pasteDirectly)
     }
 
     private func save(_ value: Any, _ key: String) {

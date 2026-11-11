@@ -8,6 +8,9 @@ Take a screenshot the way you always do (⌘⇧3, ⌘⇧4, ⌘⇧5). Dropshot th
 
 Screen recordings (⌘⇧5) are filed and previewed the same way; the clipboard gets the file.
 
+It also keeps a **clipboard history**: press ⇧⌘V anywhere (like Windows+V) to see the last 30
+things you copied — text, images, files — and pick one with the arrow keys, 1–9 or a click.
+
 Dropshot needs no Screen Recording permission. It watches a folder; it never captures the
 screen itself. It makes no network connections except Sparkle update checks, and a build
 without an update feed (the default) makes none at all. No analytics.
@@ -42,7 +45,12 @@ Both changes can be undone at any time: **Settings → About → Restore macOS D
 On a display without a notch, the preview is a black pill at the top centre of the screen
 the screenshot was taken on. Over a fullscreen app it is smaller.
 
-The menu bar icon has Settings…, Open Screenshots Folder, Pause and Quit.
+The menu bar icon has Settings…, Open Screenshots Folder, Clipboard History, Pause and Quit.
+
+Clipboard history lives in memory only and is forgotten when Dropshot quits. Entries that
+password managers mark as secret are skipped. By default picking an entry copies it and you
+press ⌘V; turn on "Paste the chosen item directly" in Settings (needs the Accessibility
+permission) to have it pasted for you. The shortcut can be changed to ⌃⌘V or ⌥⌘V.
 
 ## Build
 
@@ -63,6 +71,7 @@ Packages/DropshotCore   pure logic, unit tested: paths, detection, geometry, def
 Dropshot/App            app delegate, settings store, menu bar item
 Dropshot/Capture        FSEvents + Spotlight watchers, pipeline, clipboard, thumbnails
 Dropshot/Notch          panel, island views, hover, drag-out
+Dropshot/History        clipboard history, global shortcut, panel
 Dropshot/Settings       Settings window
 Dropshot/Onboarding     first-run setup
 Dropshot/System         macOS screenshot preferences, Sparkle wrapper

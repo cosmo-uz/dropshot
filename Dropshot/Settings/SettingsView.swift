@@ -38,6 +38,22 @@ struct GeneralSettings: View {
                 Caption("While paused, screenshots stay where macOS puts them: nothing is copied, moved or previewed.")
             }
             Section {
+                Toggle("Clipboard history", isOn: $settings.historyEnabled)
+                Picker("Shortcut", selection: $settings.historyShortcut) {
+                    ForEach(HistoryShortcut.allCases) { Text($0.displayName).tag($0) }
+                }
+                .disabled(!settings.historyEnabled)
+                Toggle("Paste the chosen item directly", isOn: Binding(
+                    get: { settings.pasteDirectly },
+                    set: { enabled in
+                        settings.pasteDirectly = enabled
+                        if enabled { HistoryPanelController.requestPastePermission() }
+                    }))
+                    .disabled(!settings.historyEnabled)
+            } footer: {
+                Caption("Press the shortcut anywhere to see the last \(ClipboardHistory.maxItems) things you copied. History is kept in memory only and is forgotten when Dropshot quits; passwords from password managers are skipped. Pasting directly needs the Accessibility permission; without it the item is copied and you press ⌘V.")
+            }
+            Section {
                 Toggle("Show menu bar icon", isOn: $settings.showMenuBarIcon)
             } footer: {
                 Caption("With the icon hidden, open Dropshot again from Finder or Spotlight to get back to these settings.")
