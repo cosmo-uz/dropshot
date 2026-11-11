@@ -20,7 +20,7 @@ Silicon and Intel.
 
 ### Download
 
-Get `Dropshot.dmg` from the [latest release](https://github.com/cosmo-newuu/dropshot/releases/latest),
+Get `Dropshot.dmg` from the [latest release](https://github.com/cosmo-uz/dropshot/releases/latest),
 open it and drag Dropshot to Applications.
 
 The download is **not notarized by Apple** yet, so macOS blocks it the first time. After
@@ -42,7 +42,7 @@ brew install xcodegen create-dmg
 ```
 
 ```bash
-git clone https://github.com/cosmo-newuu/dropshot.git && cd dropshot
+git clone https://github.com/cosmo-uz/dropshot.git && cd dropshot
 ```
 
 ```bash
