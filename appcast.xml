@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Template. Host this at the https URL you pass as SPARKLE_FEED_URL.
+     `generate_appcast` (see RELEASING.md) writes this file for you, including the
+     sparkle:edSignature and length values; edit by hand only if you must. -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Dropshot</title>
+    <link>https://example.com/dropshot/appcast.xml</link>
+    <description>Dropshot updates</description>
+    <language>en</language>
+    <item>
+      <title>Version 0.1.0</title>
+      <pubDate>Wed, 11 Nov 2026 12:00:00 +0000</pubDate>
+      <sparkle:version>1</sparkle:version>
+      <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[
+        <ul><li>First release.</li></ul>
+      ]]></description>
+      <enclosure
+        url="https://example.com/dropshot/Dropshot-0.1.0.dmg"
+        sparkle:edSignature="REPLACE_WITH_OUTPUT_OF_sign_update"
+        length="0"
+        type="application/octet-stream" />
+    </item>
+  </channel>
+</rss>
