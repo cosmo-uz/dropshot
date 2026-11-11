@@ -18,8 +18,24 @@ Silicon and Intel.
 
 ## Install
 
-There is no notarized download yet, so build it yourself. You need Xcode 16 or later and
-[Homebrew](https://brew.sh).
+### Download
+
+Get `Dropshot.dmg` from the [latest release](https://github.com/cosmo-newuu/dropshot/releases/latest),
+open it and drag Dropshot to Applications.
+
+The download is **not notarized by Apple** yet, so macOS blocks it the first time. After
+dragging it to Applications, run this once:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Dropshot.app
+```
+
+Then open Dropshot normally. (Alternatively: try to open it, then go to System Settings →
+Privacy & Security and click **Open Anyway**.)
+
+### Build from source
+
+You need Xcode 16 or later and [Homebrew](https://brew.sh).
 
 ```bash
 brew install xcodegen create-dmg
@@ -33,9 +49,7 @@ git clone https://github.com/cosmo-newuu/dropshot.git && cd dropshot
 make release
 ```
 
-Open `dist/Dropshot.dmg` and drag Dropshot to Applications. Because the build is signed
-locally and not notarized, it runs on the Mac that built it. To try it without installing,
-use `make run`.
+This writes `dist/Dropshot.dmg`. To try it without installing, use `make run`.
 
 ## First launch
 
