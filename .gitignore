@@ -2,7 +2,6 @@
 build/
 dist/*
 !dist/.gitkeep
-!dist/*.dmg
 *.xcodeproj
 .build/
 .swiftpm/
@@ -11,3 +10,6 @@ DerivedData/
 Dropshot/Resources/AppIcon.iconset/
 *.p8
 sparkle_private_key*
+# never commit captures
+Screenshot*.png
+Screen Recording*.mov

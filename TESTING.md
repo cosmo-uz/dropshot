@@ -191,6 +191,6 @@ Not run yet. Use a notched MacBook; where noted, also an external display.
 - Fullscreen detection assumes the menu bar window spans the display; untested on real
   fullscreen apps.
 - "Check for Updates…" is disabled until the app is built with a feed URL and key.
-- The DMG is ad-hoc signed, not notarized, and has no arranged window layout (Finder could
+- The locally built DMG is ad-hoc signed, not notarized, and has no arranged window layout (Finder could
   not be scripted from a locked session; `release.sh` lays it out when it can).
 - The app icon is a generated placeholder.

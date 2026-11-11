@@ -1,70 +1,128 @@
 # Dropshot
 
+A small macOS menu bar app that fixes the screenshot flow.
+
 Take a screenshot the way you always do (⌘⇧3, ⌘⇧4, ⌘⇧5). Dropshot then:
 
-- copies it to the clipboard straight away, as an image **and** as a file;
-- files it in `~/Pictures/Screenshots/YYYY/MM/DD/` instead of on your Desktop;
-- drops a preview out of the notch for about 4 seconds, which you can drag into any app.
+- **copies it to the clipboard** straight away, as an image and as a file;
+- **keeps it off your Desktop**, filed in `~/Pictures/Screenshots/YYYY/MM/DD/`;
+- **drops a preview out of the notch** for about 4 seconds, which you can drag into any app;
+- **remembers what you copied**: press ⇧⌘V anywhere for a clipboard history, like Windows+V.
 
-Screen recordings (⌘⇧5) are filed and previewed the same way; the clipboard gets the file.
+No Screen Recording permission, no analytics, no network access. macOS 14 or later, Apple
+Silicon and Intel.
 
-It also keeps a **clipboard history**: press ⇧⌘V anywhere (like Windows+V) to see the last 30
-things you copied — text, images, files — and pick one with the arrow keys, 1–9 or a click.
-
-Dropshot needs no Screen Recording permission. It watches a folder; it never captures the
-screen itself. It makes no network connections except Sparkle update checks, and a build
-without an update feed (the default) makes none at all. No analytics.
-
-Requires macOS 14 or later. Universal (Apple Silicon and Intel).
+> **Status: early (v0.1).** It works on the author's Mac but has had little real-world
+> testing. Expect rough edges; see [Known problems](#known-problems). Bug reports and pull
+> requests are welcome.
 
 ## Install
 
-Open `dist/Dropshot.dmg` and drag Dropshot to Applications.
-
-The DMG in this repository is ad-hoc signed and not notarized, so it only opens without
-complaint on the Mac that built it. See [RELEASING.md](RELEASING.md) for a notarized build.
-
-On first launch, three setup screens ask before changing anything in macOS:
-
-1. What Dropshot does.
-2. Move screenshots off your Desktop? Pick the folder; Dropshot points macOS at it.
-3. Turn off the macOS floating thumbnail? While it is on, macOS holds each file back for
-   about 5 seconds, which delays the clipboard and the preview.
-
-Both changes can be undone at any time: **Settings → About → Restore macOS Defaults…**
-
-## Use
-
-| | |
-|---|---|
-| Drag the thumbnail | Drops the file (and image data) into Telegram, Finder, Slack, Figma, a browser… |
-| Click the thumbnail | Opens the screenshot |
-| Hover | Keeps the preview open and shows Open, Show in Finder, Move to Trash |
-| Several shots in a row | Stack up with a count badge, newest on top |
-
-On a display without a notch, the preview is a black pill at the top centre of the screen
-the screenshot was taken on. Over a fullscreen app it is smaller.
-
-The menu bar icon has Settings…, Open Screenshots Folder, Clipboard History, Pause and Quit.
-
-Clipboard history lives in memory only and is forgotten when Dropshot quits. Entries that
-password managers mark as secret are skipped. By default picking an entry copies it and you
-press ⌘V; turn on "Paste the chosen item directly" in Settings (needs the Accessibility
-permission) to have it pasted for you. The shortcut can be changed to ⌃⌘V or ⌥⌘V.
-
-## Build
+There is no notarized download yet, so build it yourself. You need Xcode 16 or later and
+[Homebrew](https://brew.sh).
 
 ```bash
 brew install xcodegen create-dmg
+```
+
+```bash
+git clone https://github.com/OWNER/dropshot.git && cd dropshot
+```
+
+```bash
+make release
+```
+
+Open `dist/Dropshot.dmg` and drag Dropshot to Applications. Because the build is signed
+locally and not notarized, it runs on the Mac that built it. To try it without installing,
+use `make run`.
+
+## First launch
+
+Three setup screens ask before changing anything in macOS:
+
+1. What Dropshot does.
+2. **Move screenshots off your Desktop?** Pick a folder; Dropshot tells macOS to save there.
+3. **Turn off the macOS floating thumbnail?** While it is on, macOS holds each screenshot
+   back for about 5 seconds, which delays the clipboard and the preview.
+
+Both changes can be undone at any time in **Settings → About → Restore macOS Defaults…**,
+which puts the system settings back exactly as they were.
+
+## How to use it
+
+### Screenshots
+
+Just take one. The preview appears from the notch (or as a black pill at the top of a
+display without a notch).
+
+| Do this | What happens |
+|---|---|
+| Press ⌘V | Pastes the screenshot. It is already on the clipboard |
+| Drag the thumbnail | Drops the file into Telegram, Finder, Slack, Figma, a browser… |
+| Click the thumbnail | Opens the screenshot |
+| Hover over the preview | Keeps it open and shows Open, Show in Finder, Move to Trash |
+| Take several in a row | They stack with a count badge, newest on top |
+
+Screen recordings (⌘⇧5) are filed and previewed the same way; the clipboard gets the file.
+
+### Clipboard history
+
+Press **⇧⌘V** in any app. A panel under the notch lists the last 30 things you copied:
+text, images and files.
+
+| Key | Action |
+|---|---|
+| ↑ ↓ then Return | Choose an entry |
+| 1–9 | Choose that entry directly |
+| ⌫ | Remove the selected entry |
+| Esc | Close |
+
+Choosing an entry puts it on the clipboard; press ⌘V to paste. To have Dropshot paste for
+you, turn on **Settings → General → Paste the chosen item directly** and grant the
+Accessibility permission when macOS asks.
+
+History is kept in memory only and is forgotten when Dropshot quits. Entries that password
+managers mark as secret are not recorded. If ⇧⌘V clashes with "Paste and Match Style" in an
+app you use, switch the shortcut to ⌃⌘V or ⌥⌘V in Settings.
+
+### Menu bar
+
+The menu bar icon has Settings…, Open Screenshots Folder, Clipboard History, Pause and
+Quit. If you hide the icon, open Dropshot again from Finder or Spotlight to reach Settings.
+
+### Settings
+
+- **General:** launch at login, pause, clipboard history and its shortcut, menu bar icon.
+- **Screenshots:** folder, subfolder pattern (`YYYY/MM/DD`, `YYYY-MM` or none), file names
+  (macOS style or `2026-11-11_15-41-07`), copy to clipboard, preview duration (2–10 s),
+  sound, macOS floating thumbnail.
+- **About:** version, updates, Restore macOS Defaults.
+
+## Known problems
+
+- Only lightly tested on a real screen, and only on one Mac (macOS 27, notched MacBook Pro).
+  External displays, fullscreen apps, sleep/wake and drag-and-drop into specific apps have
+  not been checked by hand. [TESTING.md](TESTING.md) has the full checklist.
+- If screenshots still land on the Desktop after setup, log out and back in once, or run
+  `killall screencaptureui`. macOS caches the save location.
+- If you skip "Move screenshots off your Desktop", Dropshot does nothing until you turn on
+  **Save macOS screenshots to this folder** in Settings. It never watches the Desktop.
+- Clipboard history has no unit tests yet, and is lost when the app quits (by design).
+- "Check for Updates…" is disabled: there is no update feed yet.
+- The app icon is a placeholder.
+
+## Development
+
+```bash
 make build      # Debug build into build/
-make test       # unit tests (DropshotCore)
+make test       # unit tests
 make run        # build and launch
 make release    # dist/Dropshot.dmg
 ```
 
-`scripts/smoke-test.sh` runs the whole pipeline end to end against a throwaway folder.
-
-## Layout
+`scripts/smoke-test.sh` runs the screenshot pipeline end to end against a throwaway folder
+(it overwrites the clipboard while it runs).
 
 ```
 Packages/DropshotCore   pure logic, unit tested: paths, detection, geometry, defaults
@@ -78,4 +136,17 @@ Dropshot/System         macOS screenshot preferences, Sparkle wrapper
 scripts                 release.sh, make-icon.sh, smoke-test.sh
 ```
 
-More: [DECISIONS.md](DECISIONS.md) · [TESTING.md](TESTING.md) · [RELEASING.md](RELEASING.md) · [DEMO.md](DEMO.md)
+Swift 6, SwiftUI + AppKit, XcodeGen. Dependencies: [Sparkle](https://sparkle-project.org)
+and [LaunchAtLogin-Modern](https://github.com/sindresorhus/LaunchAtLogin-Modern).
+
+More detail: [DECISIONS.md](DECISIONS.md) (why things are the way they are) ·
+[TESTING.md](TESTING.md) · [RELEASING.md](RELEASING.md) (signing, notarization, updates)
+
+## Contributing
+
+Issues and pull requests are welcome. Please run `make test` before sending a change, and
+say which macOS version and Mac you tried it on.
+
+## License
+
+[MIT](LICENSE)
