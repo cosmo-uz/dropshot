@@ -26,7 +26,7 @@ brew install xcodegen create-dmg
 ```
 
 ```bash
-git clone https://github.com/OWNER/dropshot.git && cd dropshot
+git clone https://github.com/cosmo-newuu/dropshot.git && cd dropshot
 ```
 
 ```bash
