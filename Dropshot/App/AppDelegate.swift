@@ -6,6 +6,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let settings = AppSettings()
     private var statusItem: StatusItemController?
     private var settingsWindow: SettingsWindowController?
+    private let systemDefaults = SystemDefaultsService()
+    private var coordinator: CaptureCoordinator?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Log.app.info("Dropshot launched")
@@ -21,7 +23,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self, selector: #selector(settingsChanged),
             name: .dropshotSettingsChanged, object: nil)
 
+        coordinator = CaptureCoordinator(
+            settings: settings,
+            customNamePrefix: { [systemDefaults] in systemDefaults.customNamePrefix },
+            onCapture: { [weak self] in self?.handle($0) })
+
         refreshStatusItem()
+        coordinator?.sync()
+    }
+
+    private func handle(_ capture: ProcessedCapture) {
+        guard capture.isLive else { return }
+        if settings.copyToClipboard, ClipboardWriter.write(capture) {
+            // The quality bar is "on the clipboard within 1 s of the file being written".
+            if let written = FileFlags.info(atPath: capture.url.path)?.modified {
+                let ms = Int(Date().timeIntervalSince(written) * 1000)
+                Log.capture.info("Clipboard ready \(ms) ms after \(capture.url.lastPathComponent, privacy: .public) was written")
+            }
+        }
     }
 
     /// Launching the app again (Finder, Spotlight) is the way back in when the menu bar
@@ -33,6 +52,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func settingsChanged() {
         refreshStatusItem()
+        coordinator?.sync()
     }
 
     private func refreshStatusItem() {
