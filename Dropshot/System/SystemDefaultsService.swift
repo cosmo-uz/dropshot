@@ -38,10 +38,11 @@ final class CFPreferenceStore: PreferenceStore {
 
 final class UserDefaultsBackup: BackupStorage {
     private let store: UserDefaults
-    private let key = "systemDefaultsBackup"
+    private let key: String
 
-    init(store: UserDefaults = .standard) {
+    init(store: UserDefaults = .standard, key: String = "systemDefaultsBackup") {
         self.store = store
+        self.key = key
     }
 
     func loadBackup() -> Data? { store.data(forKey: key) }
@@ -68,7 +69,9 @@ final class SystemDefaultsService {
             ?? UserDefaults.standard.string(forKey: "screencaptureDomain")
             ?? Self.systemDomain
         store = CFPreferenceStore(domain: domain)
-        defaults = ScreenCaptureDefaults(system: store, backup: UserDefaultsBackup())
+        // A test domain keeps its own backup record so it can never disturb the real one.
+        let backupKey = domain == Self.systemDomain ? "systemDefaultsBackup" : "systemDefaultsBackup.\(domain)"
+        defaults = ScreenCaptureDefaults(system: store, backup: UserDefaultsBackup(key: backupKey))
         if domain != Self.systemDomain {
             Log.system.notice("Using test preferences domain \(domain, privacy: .public)")
         }
@@ -98,6 +101,7 @@ final class SystemDefaultsService {
         currentLocation.path == folder.standardizedFileURL.path
     }
 
+    var domain: String { store.domain }
     var customNamePrefix: String? { store.string(forKey: "name") }
     var hasAnythingToRestore: Bool { defaults.hasAnythingToRestore }
     var isLocationManaged: Bool { defaults.isManaged(.location) }
@@ -134,6 +138,15 @@ final class SystemDefaultsService {
     func restoreSystemThumbnail() {
         if defaults.restore(.showThumbnail) {
             Log.system.info("Floating thumbnail setting restored")
+            reloadSystemUI()
+        }
+    }
+
+    /// For someone who had already switched the thumbnail off before installing Dropshot
+    /// and now wants it back: restoring would be a no-op, so write `true` (still undoable).
+    func enableSystemThumbnail() {
+        if defaults.apply(.bool(true), to: .showThumbnail) {
+            Log.system.info("Floating thumbnail enabled")
             reloadSystemUI()
         }
     }

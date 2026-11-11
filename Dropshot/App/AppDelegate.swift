@@ -5,8 +5,11 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let settings = AppSettings()
     private var statusItem: StatusItemController?
-    private var settingsWindow: SettingsWindowController?
+    private var settingsWindow: HostedWindowController?
+    private var onboardingWindow: HostedWindowController?
     private let systemDefaults = SystemDefaultsService()
+    private lazy var integration = SystemIntegration(settings: settings, service: systemDefaults)
+    private var updater: Updater?
     private var coordinator: CaptureCoordinator?
     private lazy var preview = NotchPreviewController(settings: settings)
 
@@ -29,8 +32,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             customNamePrefix: { [systemDefaults] in systemDefaults.customNamePrefix },
             onCapture: { [weak self] in self?.handle($0) })
 
+        // Created at launch so Sparkle (when configured) can run its scheduled checks.
+        updater = Updater()
+
         refreshStatusItem()
         coordinator?.sync()
+
+        if !settings.onboardingCompleted {
+            showOnboarding()
+        }
     }
 
     private func handle(_ capture: ProcessedCapture) {
@@ -58,6 +68,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func settingsChanged() {
+        integration.refresh()
         refreshStatusItem()
         coordinator?.sync()
     }
@@ -66,16 +77,44 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem?.update(
             visible: settings.showMenuBarIcon,
             paused: settings.paused,
-            statusText: settings.paused ? "Paused" : "Watching for screenshots")
+            statusText: integration.statusText)
     }
 
     private func showSettings() {
+        // Until setup is finished there is nothing meaningful to configure.
+        guard settings.onboardingCompleted else {
+            showOnboarding()
+            return
+        }
         if settingsWindow == nil {
-            settingsWindow = SettingsWindowController { [settings] in
-                AnyView(SettingsView(settings: settings))
+            let updater = self.updater ?? Updater()
+            self.updater = updater
+            settingsWindow = HostedWindowController(title: "Dropshot Settings") { [settings, integration] in
+                AnyView(SettingsView(settings: settings, integration: integration, updater: updater))
+            }
+            settingsWindow?.onClose = { [weak self] in self?.refreshStatusItem() }
+        }
+        integration.refresh()
+        settingsWindow?.show()
+    }
+
+    private func showOnboarding() {
+        if onboardingWindow == nil {
+            onboardingWindow = HostedWindowController(title: "Welcome to Dropshot") { [weak self, settings, integration] in
+                AnyView(OnboardingView(settings: settings, integration: integration) {
+                    self?.finishOnboarding()
+                })
             }
         }
-        settingsWindow?.show()
+        onboardingWindow?.show()
+    }
+
+    private func finishOnboarding() {
+        // Flipping this starts the watchers (via the settings-changed notification).
+        settings.onboardingCompleted = true
+        onboardingWindow?.close()
+        onboardingWindow = nil
+        Log.app.info("Onboarding finished")
     }
 
     private func openScreenshotsFolder() {

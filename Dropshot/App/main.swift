@@ -5,6 +5,7 @@ import AppKit
 let app = NSApplication.shared
 #if DEBUG
 PreviewRenderer.runIfRequested()
+DebugHooks.runIfRequested()
 #endif
 let delegate = AppDelegate()
 app.delegate = delegate

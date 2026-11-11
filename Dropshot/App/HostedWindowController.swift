@@ -1,14 +1,19 @@
 import AppKit
 import SwiftUI
 
-/// Hosts the SwiftUI settings in a regular window. The window (and its view tree) is
-/// released when closed so an idle Dropshot holds no settings UI in memory.
+/// Hosts a SwiftUI view in a regular window (Settings, onboarding). The window and its
+/// view tree are released when closed, so an idle Dropshot holds no UI in memory.
 @MainActor
-final class SettingsWindowController: NSObject, NSWindowDelegate {
+final class HostedWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
+    private let title: String
     private let makeContent: () -> AnyView
+    var onClose: (() -> Void)?
 
-    init(makeContent: @escaping () -> AnyView) {
+    var isOpen: Bool { window != nil }
+
+    init(title: String, makeContent: @escaping () -> AnyView) {
+        self.title = title
         self.makeContent = makeContent
         super.init()
     }
@@ -17,7 +22,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         if window == nil {
             let hosting = NSHostingController(rootView: makeContent())
             let window = NSWindow(contentViewController: hosting)
-            window.title = "Dropshot Settings"
+            window.title = title
             window.styleMask = [.titled, .closable, .miniaturizable]
             window.isReleasedWhenClosed = false
             window.delegate = self
@@ -28,8 +33,13 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         window?.makeKeyAndOrderFront(nil)
     }
 
+    func close() {
+        window?.close()
+    }
+
     func windowWillClose(_ notification: Notification) {
         window?.contentViewController = nil
         window = nil
+        onClose?()
     }
 }
