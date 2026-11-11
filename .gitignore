@@ -1,0 +1,13 @@
+.DS_Store
+build/
+dist/*
+!dist/.gitkeep
+!dist/*.dmg
+*.xcodeproj
+.build/
+.swiftpm/
+xcuserdata/
+DerivedData/
+Dropshot/Resources/AppIcon.iconset/
+*.p8
+sparkle_private_key*
