@@ -152,6 +152,12 @@ final class NotchGeometryTests: XCTestCase {
         XCTAssertFalse(NotchGeometry.isFullscreen(windowBounds: [belowNotch], displayBounds: display))
         XCTAssertTrue(NotchGeometry.isFullscreen(
             windowBounds: [belowNotch], displayBounds: display, topInset: 32))
+        // …but the same bounds with the menu bar showing is just a zoomed window.
+        XCTAssertFalse(NotchGeometry.isFullscreen(
+            windowBounds: [belowNotch], displayBounds: display, topInset: 32, menuBarVisible: true))
+        // A window covering everything is fullscreen whatever the menu bar says.
+        XCTAssertTrue(NotchGeometry.isFullscreen(
+            windowBounds: [display], displayBounds: display, topInset: 32, menuBarVisible: true))
         // A fullscreen window on another display does not count.
         XCTAssertFalse(NotchGeometry.isFullscreen(
             windowBounds: [CGRect(x: 1512, y: 0, width: 2560, height: 1440)], displayBounds: display))

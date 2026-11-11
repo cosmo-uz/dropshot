@@ -136,19 +136,24 @@ public enum NotchGeometry {
     /// True when one of `windowBounds` (normal-layer windows, CoreGraphics display
     /// coordinates) covers the whole display — i.e. an app is in native fullscreen there.
     ///
-    /// On notched displays a fullscreen window may stop below the notch, so up to
-    /// `topInset` points at the top are allowed to be uncovered.
+    /// On notched displays a fullscreen window stops below the notch, which is also what a
+    /// zoomed window with a hidden Dock looks like. That case only counts as fullscreen
+    /// when the menu bar is not showing.
     public static func isFullscreen(
         windowBounds: [CGRect],
         displayBounds: CGRect,
         topInset: CGFloat = 0,
+        menuBarVisible: Bool = false,
         tolerance: CGFloat = 1
     ) -> Bool {
         windowBounds.contains { window in
-            abs(window.minX - displayBounds.minX) <= tolerance
-                && abs(window.width - displayBounds.width) <= tolerance
-                && abs(window.maxY - displayBounds.maxY) <= tolerance
-                && window.height >= displayBounds.height - topInset - tolerance
+            guard abs(window.minX - displayBounds.minX) <= tolerance,
+                  abs(window.width - displayBounds.width) <= tolerance,
+                  abs(window.maxY - displayBounds.maxY) <= tolerance
+            else { return false }
+            if window.height >= displayBounds.height - tolerance { return true }
+            guard topInset > 0, !menuBarVisible else { return false }
+            return window.height >= displayBounds.height - topInset - tolerance
         }
     }
 }
